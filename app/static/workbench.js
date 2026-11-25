@@ -1,5 +1,5 @@
 import {request} from './client.js';
-import {snapshot, history} from './view.js';
+import {snapshot, history, renderLedger, labelOf} from './view.js';
 import {visualize} from './plots.js';
 
 const form = document.querySelector('#source');
@@ -7,6 +7,7 @@ const file = document.querySelector('#file');
 const profile = document.querySelector('#profile');
 const status = document.querySelector('#notice');
 const detail = document.querySelector('#review');
+const backfillForm = document.querySelector('#backfill');
 const evidence = document.querySelector('#evidence');
 const stages = [...document.querySelectorAll('[data-stage]')];
 let stage = 'balance';
@@ -31,11 +32,15 @@ function draw() {
   for (const button of stages) button.setAttribute('aria-pressed',String(button.dataset.stage===stage));
   document.querySelector('#panel-title').textContent = stages.find(button => button.dataset.stage===stage)?.textContent || '运行对账';
   detail.hidden = !batch;
+  backfillForm.hidden = !batch || batch.status === 'APPROVED';
+  document.querySelector('#ledger').hidden = !batch || !(batch.revisions?.length);
   if (batch) {
-    document.querySelector('#run-status').textContent = `${batch.id.slice(0,10)} · ${batch.status} · r${batch.revision}`;
+    document.querySelector('#run-status').textContent =
+      `${batch.id.slice(0,10)} · ${labelOf(batch.status)} · r${batch.revision}`;
     detail.querySelector('[value="APPROVED"]').disabled = !report.balance.releasable || batch.status==='APPROVED';
     detail.querySelector('[value="HELD"]').disabled = batch.status==='APPROVED';
     evidence.href = `/api/runs/${batch.id}/evidence`;
+    renderLedger(batch);
   }
 }
 
@@ -101,6 +106,21 @@ detail.addEventListener('submit',event=>{
     const payload={status:event.submitter.value,revision:batch.revision,note:detail.elements.note.value};
     const result=await request(`/api/runs/${batch.id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     show(result,true); announce(result.status==='APPROVED'?'批次已签发':'批次已暂缓'); await refresh();
+  });
+});
+backfillForm.addEventListener('submit',event=>{
+  event.preventDefault();
+  if (!batch) return;
+  const fields = backfillForm.elements;
+  const payload = {revision: batch.revision, parcel: fields.parcel.value.trim(),
+    pickup_time: fields.pickup_time.value.trim(), note: fields.note.value.trim()};
+  perform(async()=>{
+    const result = await request(`/api/runs/${batch.id}/backfills`,
+      {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    show(result,true);
+    backfillForm.reset();
+    announce(result.revisions.at(-1)?.reason === 'BACKFILL_RECORDED' ? '补录已登记，估计未变' : '补录已生效，已重算滞留率');
+    await refresh();
   });
 });
 preview(stage);

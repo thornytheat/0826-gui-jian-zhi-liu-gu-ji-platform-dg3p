@@ -8,7 +8,7 @@ from app.modules.reconcile import balance
 
 
 def evaluate(rows, stage):
-    case = {'case':rows[0]['case'],'records':[r['record'] for r in rows], 'status':'READY'}
+    case = {'case': rows[0]['case'], 'records': [r['record'] for r in rows], 'status': 'READY'}
     try:
         case['prep'], payload = prepare(rows)
         if stage >= 3:
@@ -17,16 +17,22 @@ def evaluate(rows, stage):
             case.update(policy(case['measure']))
     except DomainIssue as error:
         case['status'] = error.code
+        if error.details:
+            case['issue'] = error.details
     return case
+
+
+def inspect_source(data):
+    return inspect(data)
 
 
 def run(data, stage=5):
     intake = inspect(data)
-    output = {'intake': {k:v for k,v in intake.items() if k!='rows'}}
+    output = {'intake': {k: v for k, v in intake.items() if k != 'rows'}}
     if stage == 1:
         return output
     cases = [evaluate(rows, stage) for _, rows in case_groups(intake['rows'])]
     output['cases'] = cases
     if stage >= 5:
-        output['balance'] = balance(intake,cases)
+        output['balance'] = balance(intake, cases)
     return output

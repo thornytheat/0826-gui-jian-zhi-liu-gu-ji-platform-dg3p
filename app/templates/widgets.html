@@ -34,6 +34,18 @@
 {% endmacro %}
 {% macro archive() %}
 <aside class="panel archive" id="review-area"><h2>批次复核</h2><ul id="history"></ul>
+  <form id="backfill" hidden>
+    <h3>晚到取件补录</h3>
+    <p id="backfill-hint">补录截止时或更早的取件将重算滞留率；截止后取件仍算未取。</p>
+    <div class="backfill-grid">
+      <label>柜件 <input name="parcel" required inputmode="numeric" autocomplete="off"></label>
+      <label>取件时刻 <input name="pickup_time" required inputmode="numeric" autocomplete="off"></label>
+    </div>
+    <label for="backfill-note">补录说明</label>
+    <textarea id="backfill-note" name="note" minlength="3" maxlength="200" required></textarea>
+    <button type="submit" class="action">提交补录并重算</button>
+  </form>
+  <section id="ledger" hidden><h3>补录与签发结论</h3><ul id="revision-ledger"></ul></section>
   <form id="review" hidden>
     <p id="run-status"></p><label for="note">复核意见</label>
     <textarea id="note" name="note" minlength="3" maxlength="200" required></textarea>

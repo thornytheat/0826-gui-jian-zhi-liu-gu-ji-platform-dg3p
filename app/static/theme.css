@@ -69,3 +69,17 @@ body.survival {margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(
 .survival-curve{background:repeating-linear-gradient(0deg,var(--bg) 0 24px,var(--line) 25px 26px);border-inline-start:1px solid var(--line)}.survival-curve svg{display:block;width:100%;max-height:195px}.survival-curve path{fill:none;stroke:var(--accent);stroke-width:3}.curve-labels{display:flex;gap:10px;flex-wrap:wrap;padding-top:10px}.curve-tick{color:var(--accent);font-family:var(--font-num)}
 
 .chart-note{margin-top:9px;color:var(--muted);overflow-wrap:anywhere}
+.survival .reason-chip{font-size:.82em;color:var(--accent);border:1px solid var(--line);border-radius:99px;padding:1px 8px;white-space:nowrap}
+.survival #history li{gap:6px}
+.survival #backfill{margin-top:12px;max-width:580px;border-top:1px solid var(--line);padding-top:12px}
+.survival #backfill h3{margin:.2em 0 .4em;font-size:15px}
+.survival #backfill-hint{color:var(--muted);font-size:.9em;margin:.2em 0 .6em}
+.survival .backfill-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.survival .backfill-grid input{width:100%;background:var(--bg)}
+.survival #backfill input{cursor:text}
+.survival #ledger{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
+.survival #ledger h3{margin:.2em 0 .5em;font-size:15px}
+.survival #revision-ledger{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.survival #revision-ledger li{border:1px solid var(--line);border-radius:14px;padding:8px 10px;display:grid;gap:4px}
+.survival .ledger-head{font-family:var(--font-num);color:var(--ink)}
+.survival .ledger-note{margin:0;color:var(--muted);overflow-wrap:anywhere}

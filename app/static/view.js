@@ -22,6 +22,9 @@ const labels = {READY:'通过', MISMATCH:'数值不符', PENDING:'待复核', AP
   INVALID_SAMPLE:'样本登记无效', INVALID_REGISTER:'作者登记无效', INVALID_SIMILARITY:'相似度无效',
   AUTHORITY_EXCLUSION_CONFLICT:'权威编号与禁用关系冲突', HISTORY_LIMIT:'历史窗口过长',
   DAY_OUT_OF_RANGE:'观测日超出范围', INVALID_COHORT:'入柜队列无效', PICKUP_CONFLICT:'领取记录冲突',
+  PICKUP_AMBIGUOUS:'取件时刻估值冲突', ESTIMATE_SUPERSEDED:'旧估计已失效',
+  BACKFILL_RECORDED:'补录已登记', BACKFILL_RECOMPUTED:'补录已重算', BACKFILL_AMBIGUOUS_HOLD:'补录触发暂缓',
+  REVIEW:'人工复核', IN_WINDOW:'截止前补录', POST_CUTOFF:'截止后补录',
   INVALID_OBSERVATION:'抽检记录无效', INVALID_SAMPLE_REGISTRY:'样本记录无效'};
 
 const valueLabels = {RPD:'相对偏差', ABSOLUTE:'绝对差', BOTH_ND:'双方未检出', MIXED_LOD:'一侧低于检出限',
@@ -35,6 +38,10 @@ const headers = ['业务分组', '输入行', '计算值', '参考值', '判定'
 
 export function badge(status) {
   return element('span', labels[status] || status, {class:'badge', 'data-result':status, title: status});
+}
+
+export function labelOf(code) {
+  return labels[code] || code;
 }
 
 const fieldLabels = {matched:'匹配关系', unmet:'未覆盖', loads:'磅单明细', over_limit:'超限联单',
@@ -113,7 +120,35 @@ export function history(items, active) {
     const button = element('button', run.id.slice(0,10), {'data-run':run.id,'aria-pressed':String(run.id===active),type:'button'});
     const item = element('li');
     item.append(button, badge(run.status));
+    if (run.reason) item.append(element('span', labels[run.reason] || run.reason, {class:'reason-chip', title: run.reason}));
     target.append(item);
   }
   if (!items.length) target.append(element('li','尚无执行批次'));
+}
+
+export function renderLedger(batch) {
+  const target = document.querySelector('#revision-ledger');
+  if (!target) return;
+  target.replaceChildren();
+  for (const revision of batch.revisions || []) {
+    const item = element('li');
+    item.append(
+      element('span', `r${revision.revision} · ${labels[revision.status] || revision.status}`, {class:'ledger-head'}),
+      badge(revision.reason),
+      element('p', revision.note || '—', {class:'ledger-note'})
+    );
+    if (revision.detail?.effect) {
+      item.append(element('span', labels[revision.detail.effect] || revision.detail.effect,
+        {class:'reason-chip', title: revision.detail.effect}));
+    }
+    target.append(item);
+  }
+  for (const entry of batch.backfills || []) {
+    const item = element('li', null, {class:'backfill-row'});
+    item.append(
+      element('span', `柜件 ${entry.parcel} · 时刻 ${entry.pickup_time}`, {class:'ledger-head'}),
+      badge(entry.effect)
+    );
+    target.append(item);
+  }
 }

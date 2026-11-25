@@ -1,8 +1,9 @@
 """业务阶段之间约定的结果结构。"""
 class DomainIssue(ValueError):
-    def __init__(self, code):
+    def __init__(self, code, details=None):
         super().__init__(code)
         self.code = code
+        self.details = details
 
 
 def by_kind(rows, kind):

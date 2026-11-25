@@ -13,6 +13,8 @@
 | M5 运行对账 | 对照输入、采信和隔离行 | `POST /api/stages/balance` | `app/modules/reconcile.py` | `tests/test_reconcile.py` |
 | M6 批次复核 | 执行批次并签发或暂缓 | `POST /api/runs、PATCH /api/runs/<id>` | `app/review/service.py` | `tests/test_review.py` |
 | M7 证据交付 | 下载复核清单 | `GET /api/runs/<id>/evidence` | `app/evidence/render.py` | `tests/test_evidence.py` |
+| M8 补录重算 | 晚到取件登记、重算与整批暂缓 | `POST /api/runs/<id>/backfills` | `app/backfill/service.py` | `tests/test_backfill.py`、`tests/test_backfill_http.py`、`tests/test_backfill_concurrency.py` |
+| M9 取件时刻歧义 | 双取件时刻同估值放行、异估值暂缓 | 阶段 prepare/policy | `app/modules/prepare.py` | `tests/test_pickup_ambiguity.py` |
 
 ## 输入陷阱
 
@@ -29,6 +31,11 @@
 | TRAP-16 | 引号未闭合时拒收文件 | `app/intake/reader.py` | `tests/test_intake.py::test_unclosed_quote_invalidates_source` |
 | TRAP-18 | 区分空文件、全空白和仅表头 | `app/intake/reader.py` | `tests/test_intake.py::test_empty_states_have_distinct_causes` |
 | TRAP-26 | 拒绝旧版本复核 | `app/review/store.py` | `tests/test_review.py::test_review_optimistic_lock` |
+| TRAP-31 | 截止后补录仍算未取 | `app/backfill/service.py`、`app/modules/prepare.py` | `tests/test_backfill.py::test_post_cutoff_backfill_keeps_estimate_and_marks_unpicked` |
+| TRAP-32 | 双取件时刻同估值放行、异估值暂缓 | `app/modules/prepare.py` | `tests/test_pickup_ambiguity.py` |
+| TRAP-33 | 补录先生效拒绝旧估计签发 | `app/review/service.py`、`app/review/store.py` | `tests/test_backfill.py::test_backfill_then_stale_approval_is_refused` |
+| TRAP-34 | 补录与签发并发只落一条审计 | `app/review/store.py` | `tests/test_backfill_concurrency.py` |
+| TRAP-35 | 工作台暴露结论原因链 | `app/review/store.py`、`app/static/view.js` | `tests/test_backfill_http.py::test_run_detail_exposes_conclusion_and_reason_chain` |
 
 ## 领域反例
 
